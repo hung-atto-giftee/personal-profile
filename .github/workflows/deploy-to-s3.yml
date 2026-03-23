@@ -18,39 +18,54 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'ap-southeast-1'
+          aws-region: ${{ secrets.AWS_REGION }}
           
       - name: Sync files to S3
         run: |
-          # Sync all files first
+          # Upload all project files to S3
           aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }} \
             --delete \
             --exclude ".git/*" \
             --exclude ".github/*" \
             --exclude "README.md" \
             --exclude "*.md"
-          
-          # Set content types and cache control for different file types
+
+      - name: Set HTML cache control
+        run: |
+          # Disable caching for HTML files to ensure latest content is always served
           aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --recursive \
             --exclude "*" \
             --include "*.html" \
             --content-type "text/html" \
-            --cache-control "public, max-age=3600" \
+            --cache-control "no-cache, no-store, must-revalidate" \
             --metadata-directive REPLACE
-          
+
+      - name: Set CSS cache control
+        run: |
+          # Enable long-term caching for CSS files
           aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --recursive \
             --exclude "*" \
             --include "*.css" \
             --content-type "text/css" \
-            --cache-control "public, max-age=31536000" \
+            --cache-control "public, max-age=31536000, immutable" \
             --metadata-directive REPLACE
-          
+
+      - name: Set JS cache control
+        run: |
+          # Enable long-term caching for JS files
           aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }}/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --recursive \
             --exclude "*" \
             --include "*.js" \
             --content-type "application/javascript" \
-            --cache-control "public, max-age=31536000" \
+            --cache-control "public, max-age=31536000, immutable" \
             --metadata-directive REPLACE
+
+      - name: Invalidate CloudFront cache
+        run: |
+          # Clear CloudFront cache so users receive the latest version
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"

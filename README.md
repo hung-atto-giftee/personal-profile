@@ -1,4 +1,4 @@
-# CHU TRIEU CHINH – Senior Backend Engineer
+# HUNG NGUYEN – Senior Backend Engineer
 
 Interactive personal resume website built with HTML, Tailwind CSS, and vanilla JavaScript.
 
