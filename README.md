@@ -1,4 +1,4 @@
-# HUNG NGUYEN – Senior Backend Engineer
+# NGUYEN XUAN HUNG – Full Stack Software Engineer
 
 Interactive personal resume website built with HTML, Tailwind CSS, and vanilla JavaScript.
 
